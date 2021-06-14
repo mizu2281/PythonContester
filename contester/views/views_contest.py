@@ -67,7 +67,7 @@ def getTaskByIdForContest(request, contest_id, task_id):
         finished = True
 
     form = DocumentForm()
-    my_submits_qs = Submit.objects.filter(user_id=request.user.id, task_id=task_id)
+    my_submits_qs = ContestSubmit.objects.filter(contest_id=contest_id, user_id=request.user.id, task_id=task_id)
     my_submits = []
     has_accepted = False
     for submit in my_submits_qs:

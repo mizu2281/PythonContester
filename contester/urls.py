@@ -24,7 +24,7 @@ urlpatterns = [
     path('suggest-new-task', views.suggest_task, name='suggest_task'),
     path('new-task', views.createTask, name='new_task'),
     path('new-test-cases', views.test_cases, name='new_test-cases'),
-    path('task/run_sh/<int:type>', views.runscript, name='run_sh'),
+    path('task/run_sh/<str:contest_id>', views.runscript, name='run_sh'),
 
     path('', include(router.urls)),
 ]

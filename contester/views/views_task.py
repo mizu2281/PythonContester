@@ -11,8 +11,10 @@ from contester.checker import checker
 from contester.forms import *
 
 
-def runscript(request):
+def runscript(request, contest_id):
+    global taskLink
     if request.method == 'POST':
+        contest_id=int(contest_id)
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             task_id = request.POST.get('task_id', None)
@@ -32,36 +34,56 @@ def runscript(request):
             res = 0
             for i in result:
                 res += i
-
+            print("contest id: " + str(contest_id))
             task = Task.objects.get(pk=task_id)
             points = task.points * float(res / numberOfTestCases)
             is_accepted = False
-            if res == numberOfTestCases:
-                is_accepted = True
-                countAccepted = Submit.objects.filter(user_id=request.user.id, task_id=task_id,
-                                                      is_accepted=True).count()
-                if countAccepted == 0:
-                    task.user_counter += 1
-                    task.save()
+            if contest_id == 0:
+                if res == numberOfTestCases:
+                    is_accepted = True
+                    countAccepted = Submit.objects.filter(user_id=request.user.id, task_id=task_id,
+                                                          is_accepted=True).count()
+                    if countAccepted == 0:
+                        task.user_counter += 1
+                        task.save()
 
-            all_submits = Submit.objects.filter(user_id=request.user.id, task_id=task_id)
-            old_mx = 0
-            for submit in all_submits:
-                old_mx = max(old_mx, submit.points)
+                all_submits = Submit.objects.filter(user_id=request.user.id, task_id=task_id)
+                old_mx = 0
+                for submit in all_submits:
+                    old_mx = max(old_mx, submit.points)
 
-            new_mx = max(old_mx, points)
-            curUser = Account.objects.get(pk=request.user.id)
-            curUser.points -= old_mx
-            curUser.points += new_mx
-            curUser.save()
+                new_mx = max(old_mx, points)
+                curUser = Account.objects.get(pk=request.user.id)
+                curUser.points -= old_mx
+                curUser.points += new_mx
+                curUser.save()
 
-            new_submit = Submit(user_id=request.user.id, task_id=task_id, points=points, is_accepted=is_accepted,
-                                document_id=newdoc.id)
-            new_submit.save()
+                new_submit = Submit(user_id=request.user.id, task_id=task_id, points=points, is_accepted=is_accepted,
+                                    document_id=newdoc.id)
+                new_submit.save()
 
-            # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+                # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-            taskLink = "http://127.0.0.1:8000/task/" + str(task_id)
+                taskLink = "http://127.0.0.1:8000/task/" + str(task_id)
+            else:
+                if res == numberOfTestCases:
+                    is_accepted = True
+                    if res == numberOfTestCases:
+                        is_accepted = True
+                        countAccepted = ContestSubmit.objects.filter(user_id=request.user.id, contest_id=contest_id,task_id=task_id,
+                                                              is_accepted=True).count()
+                        if countAccepted == 0:
+                            task.user_counter += 1
+                            task.save()
+
+                    new_submit = ContestSubmit(user_id=request.user.id, contest_id=contest_id, task_id=task_id, points=points,
+                                        is_accepted=is_accepted, document_id=newdoc.id)
+                    new_submit.save()
+
+                    # return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+                    taskLink = "http://127.0.0.1:8000/contest/"+str(contest_id)+"/task/" + str(task_id)
+
             return render(request, 'task/results.html',
                           {'res': res, 'task_id': task_id, 'task': task, "taskLink": taskLink,
                            'totalNumOfTestCases': numberOfTestCases, "accepted": is_accepted})

@@ -104,6 +104,15 @@ class Submit(models.Model):
     document_id = models.IntegerField()
     submited_at = models.DateTimeField(auto_now_add=True)
 
+class ContestSubmit(models.Model):
+    user_id = models.IntegerField()
+    task_id = models.IntegerField()
+    contest_id = models.IntegerField()
+    points = models.FloatField(max_length=100)
+    is_accepted = models.BooleanField(default=False)
+    document_id = models.IntegerField()
+    submited_at = models.DateTimeField(auto_now_add=True)
+
 
 class Contest(models.Model):
     title = models.CharField(max_length=100)
